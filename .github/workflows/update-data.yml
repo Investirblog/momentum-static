@@ -2,8 +2,8 @@ name: Update Momentum Data
 
 on:
   schedule:
-    - cron: '0 18 1 * *'  # 1er de chaque mois à 18h UTC
-  workflow_dispatch:        # déclenchement manuel possible
+    - cron: '0 18 1 * *'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -35,4 +35,3 @@ jobs:
           git add data.json
           git diff --staged --quiet || git commit -m "Update momentum data $(date +'%Y-%m-%d')"
           git push
-          
