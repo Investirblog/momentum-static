@@ -422,13 +422,12 @@ function renderTable(data, final) {
       </div>`;
     }
 
-    const justETFUrl = `https://www.justetf.com/fr/search.html?search=ISIN&query=${etf.t.replace('.DE','').replace('.L','')}`;
 
     const tr = document.createElement('tr');
     tr.className = rowCls + (final?' fade-in':'');
     tr.innerHTML = `
       <td>${badge}</td>
-      <td><a href="${justETFUrl}" target="_blank" style="text-decoration:none"><span class="ticker-cell">${etf.d}</span></a></td>
+      <td><span class="ticker-cell">${etf.d}</span></td>
       <td class="name-cell hide-sm"><span style="color:var(--text2);font-size:13px">${etf.n}</span></td>
       <td class="hide-sm"><span class="bloc-tag ${etf.b}">${{sector:'Secteur',factor:'Facteur',refuge:'Refuge'}[etf.b]}</span></td>
       <td class="r">${trendHtml}</td>
