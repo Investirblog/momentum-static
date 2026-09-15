@@ -117,7 +117,7 @@
 
   .top-banner { display: none; gap: 16px; margin-bottom: 12px; }
   .top-banner.visible { display: grid; grid-template-columns: 1fr 1fr; }
-  .top-card { padding: 22px 24px; border: 2px solid; position: relative; overflow: hidden; }
+  .top-card { padding: 22px 24px; border: 2px dashed; position: relative; overflow: hidden; }
   .top-card.r1 { border-color: var(--rank1); background: rgba(200,241,53,0.05); }
   .top-card.r2 { border-color: var(--rank2); background: rgba(61,240,194,0.05); }
   .top-card::before {
@@ -295,14 +295,14 @@
 
   <div class="top-banner" id="topBanner">
     <div class="top-card r1" data-rank="1">
-      <div class="tc-label">✦ Sélection #1 — 50%</div>
+      <div class="tc-label">🔄 Aperçu · Rang #1</div>
       <div class="tc-ticker" id="t1ticker">—</div>
       <div class="tc-name" id="t1name">—</div>
       <div class="tc-score" id="t1score">Score : —</div>
       <div class="tc-perfs" id="t1perfs"></div>
     </div>
     <div class="top-card r2" data-rank="2">
-      <div class="tc-label">✦ Sélection #2 — 50%</div>
+      <div class="tc-label">🔄 Aperçu · Rang #2</div>
       <div class="tc-ticker" id="t2ticker">—</div>
       <div class="tc-name" id="t2name">—</div>
       <div class="tc-score" id="t2score">Score : —</div>
@@ -564,7 +564,7 @@ function renderPositionBanner(history) {
   } else {
     banner.className = 'position-banner visible';
     label.textContent = '📌 Première période de suivi en cours';
-    picks.innerHTML = '<div class="pb-pick"><span class="n">Pas encore de position officielle</span></div>';
+    picks.innerHTML = '<div class="pb-pick"><span class="n">Aucune — les cartes affichées plus bas sont un aperçu qui évolue chaque jour, ce n\'est pas encore une recommandation à suivre</span></div>';
     note.textContent = 'La première sélection figée sera disponible le ' + decisionDateLabel + ', après 17h30.';
     apercuLabel.textContent = 'Aperçu en formation pour ce mois — pas encore actionnable';
     provisionalBadge.style.display = 'inline-block';
