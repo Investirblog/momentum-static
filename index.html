@@ -389,6 +389,12 @@ function fmt(v) {
   if (v==null) return { t:'—', c:'neu' };
   return { t:(v>=0?'+':'')+v.toFixed(1)+'%', c: v>0.5?'pos':v<-0.5?'neg':'neu' };
 }
+function fmtScore(v) {
+  // Le score 13612W est un composite pondéré, pas un vrai pourcentage —
+  // affiché sans "%" pour ne pas laisser croire que c'est un rendement.
+  if (v==null) return { t:'—', c:'neu' };
+  return { t:(v>=0?'+':'')+v.toFixed(1), c: v>0.5?'pos':v<-0.5?'neg':'neu' };
+}
 
 async function loadAll() {
   const btn = document.getElementById('btnLoad');
@@ -471,7 +477,7 @@ function renderTable(data, final) {
     } else if (etf.score==null) {
       scoreHtml = '<span class="pv neu">—</span>';
     } else {
-      const sf=fmt(etf.score);
+      const sf=fmtScore(etf.score);
       const pct=Math.max(5,Math.min(100,(etf.score/maxScore)*100));
       scoreHtml = '<div class="score-wrap">' +
         '<span class="score-num ' + (is1||is2?'score-top':'') + ' pv ' + sf.c + '">' + sf.t + '</span>' +
@@ -507,7 +513,7 @@ function fillBanner(top2) {
     const n = i+1;
     document.getElementById('t'+n+'ticker').textContent = e.d;
     document.getElementById('t'+n+'name').textContent   = e.n;
-    const sf = fmt(e.score);
+    const sf = fmtScore(e.score);
     document.getElementById('t'+n+'score').textContent  = 'Score : ' + sf.t;
     document.getElementById('t'+n+'perfs').innerHTML = [
       {l:'1M',v:fmt(e.p1)},{l:'3M',v:fmt(e.p3)},{l:'6M',v:fmt(e.p6)},{l:'12M',v:fmt(e.p12)}
