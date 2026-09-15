@@ -1,0 +1,16 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+
+# Recalcule le classement 1×/jour et fige la sélection mensuelle dans
+# Netlify Blobs. Exécuté à 20h00 UTC (22h CEST l'été / 21h CET l'hiver) —
+# après la clôture Xetra/LSE (17h30 locale), sinon la clôture du dernier
+# jour ouvré du mois n'est pas encore disponible au moment du calcul.
+[functions."update-momentum-scheduled"]
+  schedule = "0 20 * * *"

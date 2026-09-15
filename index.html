@@ -4,9 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Momentum Screener · Rotation ETF mensuelle</title>
+<meta name="description" content="Screener momentum 13612W (Keller) sur 14 ETF UCITS — sélection automatique mensuelle, filtre SMA200.">
+<link rel="canonical" href="https://momentumstatic.netlify.app/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  html { overflow-x: hidden; }
   :root {
     --bg: #0d0f14;
     --surface: #181b24;
@@ -21,6 +24,7 @@
     --pos: #3df0c2;
     --neg: #ff5e6c;
     --neu: #b0b6c8;
+    --gold: #ffc247;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -29,6 +33,8 @@
     font-family: 'Open Sans', sans-serif;
     font-size: 16px;
     min-height: 100vh;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
   body::before {
     content: '';
@@ -41,7 +47,6 @@
   }
   .wrap { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 44px 24px 80px; }
 
-  /* HEADER */
   .label-tag {
     display: inline-block;
     font-family: 'Space Mono', monospace;
@@ -53,7 +58,6 @@
   h1 span { color: var(--accent); }
   .subtitle { color: var(--text2); font-size: 13px; line-height: 1.8; margin-bottom: 28px; }
 
-  /* DATA DATE BADGE */
   .data-date {
     display: inline-flex; align-items: center; gap: 8px;
     font-size: 12px;
@@ -62,7 +66,6 @@
     padding: 5px 12px; margin-bottom: 20px;
   }
 
-  /* FORMULA */
   .formula-bar {
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
     margin-bottom: 28px; padding: 13px 16px;
@@ -73,7 +76,6 @@
   .fp { background: rgba(200,241,53,0.12); color: var(--accent); padding: 2px 8px; border-radius: 2px; font-weight: 700; }
   .sep { color: var(--muted); }
 
-  /* CONTROLS */
   .controls { display: flex; gap: 12px; align-items: center; margin-bottom: 24px; flex-wrap: wrap; }
   .btn-main {
     font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700;
@@ -83,22 +85,37 @@
   }
   .btn-main:hover { background: #d4f545; }
   .btn-main:disabled { opacity: 0.35; cursor: not-allowed; }
-  .btn-sec {
-    font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.06em;
-    text-transform: uppercase; padding: 13px 20px;
-    background: transparent; color: var(--text2);
-    border: 1px solid var(--border); cursor: pointer; transition: all 0.15s;
-  }
-  .btn-sec:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* STATUS */
   #status { font-size: 13px; min-height: 22px; margin-bottom: 20px; color: var(--text2); }
   #status.loading { color: var(--accent); }
   #status.error   { color: var(--neg); }
   #status.ok      { color: var(--pos); }
 
-  /* TOP BANNER */
-  .top-banner { display: none; gap: 16px; margin-bottom: 28px; }
+  .position-banner {
+    border: 2px solid var(--accent); background: rgba(200,241,53,0.06);
+    padding: 20px 24px; margin-bottom: 20px; display: none;
+  }
+  .position-banner.visible { display: block; }
+  .position-banner.action-day { border-color: var(--gold); background: rgba(255,194,71,0.08); animation: pulseBorder 2s ease-in-out infinite; }
+  @keyframes pulseBorder { 0%,100% { box-shadow: 0 0 0 0 rgba(255,194,71,.35); } 50% { box-shadow: 0 0 0 8px rgba(255,194,71,0); } }
+  .pb-label { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .pb-picks { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 10px; }
+  .pb-pick { font-family: 'Space Mono', monospace; }
+  .pb-pick .t { font-size: 22px; font-weight: 700; color: var(--accent); }
+  .pb-pick .n { font-size: 12px; color: var(--text2); font-family: 'Open Sans', sans-serif; }
+  .pb-note { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+  .apercu-label {
+    font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 4px;
+  }
+  .provisional-badge {
+    display: inline-block; font-size: 11px; font-weight: 700; color: var(--gold);
+    background: rgba(255,194,71,.1); border: 1px solid rgba(255,194,71,.3);
+    border-radius: 20px; padding: 4px 12px; margin-bottom: 14px;
+  }
+
+  .top-banner { display: none; gap: 16px; margin-bottom: 12px; }
   .top-banner.visible { display: grid; grid-template-columns: 1fr 1fr; }
   .top-card { padding: 22px 24px; border: 2px solid; position: relative; overflow: hidden; }
   .top-card.r1 { border-color: var(--rank1); background: rgba(200,241,53,0.05); }
@@ -119,8 +136,7 @@
   .perf-chip { font-family: 'Space Mono', monospace; font-size: 11px; }
   .pclabel { color: var(--muted); }
 
-  /* TABLE */
-  .table-wrap { overflow-x: auto; }
+  .table-wrap { overflow-x: auto; margin-top: 28px; }
   table { border-collapse: collapse; margin: 0 auto; }
   thead th {
     font-family: 'Space Mono', monospace; font-size: 10px;
@@ -158,7 +174,8 @@
   }
   .bloc-tag.sector { background: rgba(255,107,53,0.18); color: #ffaa80; }
   .bloc-tag.factor { background: rgba(61,240,194,0.14); color: #5df5d0; }
-  .bloc-tag.refuge { background: rgba(200,241,53,0.12); color: #d8f560; }
+  .bloc-tag.geo { background: rgba(200,241,53,0.12); color: #d8f560; }
+  .bloc-tag.refuge { background: rgba(255,194,71,0.14); color: var(--gold); }
 
   .trend-ind {
     display: inline-flex; align-items: center; gap: 4px;
@@ -179,7 +196,21 @@
   .score-num { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; }
   .score-top { color: var(--accent); }
 
-  /* ERREUR BOX */
+  .hist-section { margin-top: 32px; }
+  .hist-title {
+    font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hist-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .hist-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .hist-table th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--border); font-family: 'Space Mono', monospace; }
+  .hist-table td { padding: 9px 10px; border-bottom: 1px solid rgba(255,255,255,.05); font-family: 'Space Mono', monospace; }
+  .hist-table tr:last-child td { border-bottom: none; }
+  .hist-current { font-size: 9px; font-weight: 700; color: var(--gold); margin-left: 6px; font-family: 'Open Sans', sans-serif; }
+  .hist-empty { padding: 20px; text-align: center; color: var(--muted); font-size: 13px; }
+  .hist-wrap { background: var(--surface); border: 1px solid var(--border); padding: 4px 14px; overflow-x: auto; }
+
   .err-box {
     margin: 20px 0; padding: 16px 20px;
     background: rgba(255,94,108,0.07); border: 1px solid rgba(255,94,108,0.3);
@@ -189,15 +220,9 @@
   }
   .err-box.visible { display: block; }
 
-  /* FOOTER */
-.footer-note {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid var(--border);
-    font-size: 12px;
-    color: var(--text2);
-    line-height: 1.5;
-    text-align: center; /* Ajoute cette ligne pour centrer le texte */
+  .footer-note {
+    margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--text2); line-height: 1.5; text-align: center;
   }
   .footer-note a { color: var(--accent); text-decoration: none; }
   .footer-note a:hover { text-decoration: underline; }
@@ -218,6 +243,7 @@
     th.hide-sm, td.hide-sm { display: none; }
     h1 { font-size: 28px; }
     .wrap { padding: 28px 16px 60px; }
+    .pb-picks { gap: 14px; }
   }
 </style>
 </head>
@@ -232,11 +258,7 @@
   </header>
 
   <div id="dateBadge" style="display:none" class="data-date">
-    📅 <span id="dateText">—</span>
-  </div>
-
-  <div id="dateBadge" style="display:none;margin-bottom:16px;">
-    <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--accent2);background:rgba(61,240,194,0.08);border:1px solid rgba(61,240,194,0.2);padding:5px 12px;">📅 <span id="dateText"></span></span>
+    📅 <span id="dateText">—</span> &nbsp;·&nbsp; <span id="cacheText"></span>
   </div>
 
   <div class="formula-bar">
@@ -249,14 +271,10 @@
     <span style="margin-left:8px">Filtre :</span>
     <span class="fp" style="background:rgba(61,240,194,0.12);color:#5df5d0">cours > SMA200</span>
     <span>= éligible</span>
-    <span class="sep">&nbsp;/&nbsp;</span>
-    <span style="color:#ff7a86">cours &lt; SMA200</span>
-    <span>= exclu</span>
   </div>
 
   <div class="controls">
-    <button class="btn-main" id="btnLoad" onclick="loadAll()">▶ Charger les données</button>
-    <button class="btn-sec" onclick="resetData()">↺ Réinitialiser</button>
+    <button class="btn-main" id="btnLoad" onclick="loadAll()">⟳ Actualiser</button>
   </div>
 
   <div id="status"></div>
@@ -266,7 +284,15 @@
     → Vérifie ta connexion internet ou réessaie dans quelques instants.
   </div>
 
-  <!-- Top 2 -->
+  <div class="position-banner" id="positionBanner">
+    <div class="pb-label" id="pbLabel">📌 Position à tenir en ce moment</div>
+    <div class="pb-picks" id="pbPicks"></div>
+    <div class="pb-note" id="pbNote"></div>
+  </div>
+
+  <div class="apercu-label" id="apercuLabel">Aperçu en formation</div>
+  <div class="provisional-badge" id="provisionalBadge">🔄 Évolue jusqu'au dernier jour ouvré du mois — pas encore actionnable</div>
+
   <div class="top-banner" id="topBanner">
     <div class="top-card r1" data-rank="1">
       <div class="tc-label">✦ Sélection #1 — 50%</div>
@@ -275,7 +301,6 @@
       <div class="tc-score" id="t1score">Score : —</div>
       <div class="tc-perfs" id="t1perfs"></div>
     </div>
-
     <div class="top-card r2" data-rank="2">
       <div class="tc-label">✦ Sélection #2 — 50%</div>
       <div class="tc-ticker" id="t2ticker">—</div>
@@ -283,12 +308,8 @@
       <div class="tc-score" id="t2score">Score : —</div>
       <div class="tc-perfs" id="t2perfs"></div>
     </div>
-
   </div>
 
-  </div>
-
-  <!-- Tableau -->
   <div class="table-wrap">
     <table id="mainTable">
       <thead>
@@ -309,21 +330,59 @@
     </table>
   </div>
 
+  <div class="hist-section">
+    <div class="hist-title">Historique des sélections <span style="font-size:9px;">24 derniers mois</span></div>
+    <div class="hist-wrap">
+      <table class="hist-table" id="histTable" style="display:none;">
+        <thead><tr><th>Mois</th><th>Sélection #1</th><th>Sélection #2</th></tr></thead>
+        <tbody id="histBody"></tbody>
+      </table>
+      <div class="hist-empty" id="histEmpty">Historique en cours de constitution — repassez dans quelques jours.</div>
+    </div>
+  </div>
+
   <div class="footer-note">
-    Données mises à jour automatiquement le 1er de chaque mois · Source : Yahoo Finance<br>
+    Recalculé automatiquement chaque jour · Position figée le dernier jour ouvré du mois · Source : Yahoo Finance<br>
     1M = 21 j · 3M = 63 j · 6M = 126 j · 12M = 252 j · SMA200 = 200 j · Score = 12×ret1M + 4×ret3M + 2×ret6M + ret12M<br>
     ⚠ Outil d'aide à la décision uniquement — pas un conseil en investissement<br>
-    Un outil proposé par <a href="https://investir.blog" target="_blank">investir.blog</a>
+    Un outil proposé par <a href="https://investir.blog" target="_blank" rel="noopener">investir.blog</a>
   </div>
 </div>
 
 <script>
-const DATA_URL = 'https://raw.githubusercontent.com/Investirblog/momentum-static/main/data.json';
-let results = [];
+const MONTHS_LONG = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 
-function setStatus(msg, cls='') {
+function easterSunday(year) {
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+  const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3), h = (19*a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4, l = (32 + 2*e + 2*i - h - k) % 7;
+  const m = Math.floor((a + 11*h + 22*l) / 451);
+  const month = Math.floor((h + l - 7*m + 114) / 31);
+  const day = ((h + l - 7*m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+function isMarketHoliday(date) {
+  const y = date.getFullYear(), m = date.getMonth(), d = date.getDate();
+  if (m === 0 && d === 1) return true;
+  if (m === 4 && d === 1) return true;
+  if (m === 11 && d === 25) return true;
+  if (m === 11 && d === 26) return true;
+  const easter = easterSunday(y);
+  const sameDay = (a, b) => a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+  const goodFriday = new Date(easter); goodFriday.setDate(easter.getDate() - 2);
+  const easterMonday = new Date(easter); easterMonday.setDate(easter.getDate() + 1);
+  return sameDay(date, goodFriday) || sameDay(date, easterMonday);
+}
+function lastWeekdayOfMonth(year, monthIndex) {
+  let dte = new Date(year, monthIndex + 1, 0);
+  while (dte.getDay() === 0 || dte.getDay() === 6 || isMarketHoliday(dte)) dte.setDate(dte.getDate() - 1);
+  return dte;
+}
+
+function setStatus(msg, cls) {
   const el = document.getElementById('status');
-  el.innerHTML = msg; el.className = cls;
+  el.innerHTML = msg; el.className = cls || '';
 }
 
 function fmt(v) {
@@ -336,146 +395,201 @@ async function loadAll() {
   btn.disabled = true;
   document.getElementById('errBox').classList.remove('visible');
   document.getElementById('topBanner').classList.remove('visible');
+  document.getElementById('positionBanner').classList.remove('visible');
   document.getElementById('dateBadge').style.display = 'none';
-  results = [];
   renderTable([], false);
 
   setStatus('<span class="spin"></span>Chargement des données…', 'loading');
   try {
-    const res = await fetch(DATA_URL + '?t=' + Date.now());
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await fetch('/.netlify/functions/get-momentum?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
 
-    const rawResults = data.results || data['résultats'] || [];
-    if (rawResults.length === 0)
-      throw new Error('Données vides — le workflow GitHub Actions n\'a pas encore tourné');
+    const rawResults = data.results || [];
+    if (rawResults.length === 0) throw new Error('Données vides — réessayez dans quelques instants');
 
-    results = rawResults.map(r => ({
+    const results = rawResults.map(r => ({
       t: r.ticker, d: r.display, n: r.name, b: r.bloc,
       p1: r.p1m, p3: r.p3m, p6: r.p6m, p12: r.p12m,
       score: r.score, above: r.above_sma200,
       last: r.last_price, err: r.error
     }));
 
-    // Date badge
-    if (data.computed_at) {
-      const d = new Date(data.computed_at);
-      const label = d.toLocaleDateString('fr-BE', {day:'numeric', month:'long', year:'numeric'});
-      document.getElementById('dateText').textContent = `Données du ${label}`;
+    if (data.updatedAt) {
+      const d = new Date(data.updatedAt);
+      const label = d.toLocaleDateString('fr-BE', {day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'});
+      document.getElementById('dateText').textContent = 'Calculé le ' + label;
+      document.getElementById('cacheText').textContent = data.cached ? '● Cache (rafraîchi 1×/jour)' : '● Calculé en direct';
       document.getElementById('dateBadge').style.display = 'inline-flex';
     }
 
-    // Afficher la date des données
-    if (data.computed_at) {
-      const d = new Date(data.computed_at);
-      const label = d.toLocaleDateString('fr-BE', {day:'numeric', month:'long', year:'numeric'});
-      document.getElementById('dateText').textContent = 'Données du ' + label;
-      document.getElementById('dateBadge').style.display = 'block';
-    }
     renderTable(results, true);
-    const ok = results.filter(r=>!r.err).length;
-    setStatus(`✓ ${ok}/${results.length} ETF chargés`, 'ok');
+    renderPositionBanner(data.history || []);
+    renderHistory(data.history || []);
+    const ok = results.filter(function(r){return !r.err;}).length;
+    setStatus('✓ ' + ok + '/' + results.length + ' ETF chargés', 'ok');
   } catch(e) {
-    setStatus(`⚠ ${e.message}`, 'error');
+    setStatus('⚠ ' + e.message, 'error');
     document.getElementById('errBox').classList.add('visible');
   }
   btn.disabled = false;
 }
 
 function renderTable(data, final) {
-  const eligible   = data.filter(e=>e.score!=null && e.above!==false).sort((a,b)=>b.score-a.score);
-  const ineligible = data.filter(e=>e.score!=null && e.above===false).sort((a,b)=>b.score-a.score);
-  const errors     = data.filter(e=>e.err && e.score==null);
-  const sorted = [...eligible, ...ineligible, ...errors];
+  const eligible   = data.filter(function(e){return e.score!=null && e.above!==false;}).sort(function(a,b){return b.score-a.score;});
+  const errors     = data.filter(function(e){return e.err && e.score==null;});
+  const ineligible = data.filter(function(e){return e.score!=null && e.above===false;}).sort(function(a,b){return b.score-a.score;});
+  const sorted = eligible.concat(ineligible, errors);
   const top2 = eligible.slice(0,2);
-  const maxScore = sorted.reduce((m,e)=>Math.max(m,Math.abs(e.score||0)),1);
+  const maxScore = sorted.reduce(function(m,e){return Math.max(m,Math.abs(e.score||0));},1);
 
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
 
-  sorted.forEach(etf => {
-    const is1 = top2[0]?.t === etf.t;
-    const is2 = top2[1]?.t === etf.t;
+  sorted.forEach(function(etf) {
+    const is1 = top2[0] && top2[0].t === etf.t;
+    const is2 = top2[1] && top2[1].t === etf.t;
     const rank = eligible.indexOf(etf)+1;
 
-    const badge = is1 ? `<span class="rank-badge rb1">1</span>`
-                : is2 ? `<span class="rank-badge rb2">2</span>`
-                : etf.score!=null ? `<span class="rank-badge rbn">${etf.above!==false?rank:'—'}</span>`
-                : `<span class="rank-badge rbn">·</span>`;
+    const badge = is1 ? '<span class="rank-badge rb1">1</span>'
+                : is2 ? '<span class="rank-badge rb2">2</span>'
+                : etf.score!=null ? '<span class="rank-badge rbn">' + (etf.above!==false?rank:'—') + '</span>'
+                : '<span class="rank-badge rbn">·</span>';
 
     const rowCls = is1?'sel1':is2?'sel2':etf.above===false?'dimmed':'';
     const p1f=fmt(etf.p1), p3f=fmt(etf.p3), p6f=fmt(etf.p6);
 
     const trendHtml = etf.last==null
-      ? `<span class="trend-ind unk">—</span>`
-      : etf.above===true  ? `<span class="trend-ind up">↑ SMA200</span>`
-      : etf.above===false ? `<span class="trend-ind down">↓ SMA200</span>`
-      : `<span class="trend-ind unk">—</span>`;
+      ? '<span class="trend-ind unk">—</span>'
+      : etf.above===true  ? '<span class="trend-ind up">↑ SMA200</span>'
+      : etf.above===false ? '<span class="trend-ind down">↓ SMA200</span>'
+      : '<span class="trend-ind unk">—</span>';
 
     let scoreHtml;
     if (etf.err) {
-      scoreHtml = `<span style="font-family:'Space Mono',monospace;font-size:11px;color:#ff7a86">ERR</span>`;
+      scoreHtml = '<span style="font-family:\'Space Mono\',monospace;font-size:11px;color:#ff7a86">ERR</span>';
     } else if (etf.score==null) {
-      scoreHtml = `<span class="pv neu">—</span>`;
+      scoreHtml = '<span class="pv neu">—</span>';
     } else {
       const sf=fmt(etf.score);
       const pct=Math.max(5,Math.min(100,(etf.score/maxScore)*100));
-      scoreHtml = `<div class="score-wrap">
-        <span class="score-num ${is1||is2?'score-top':''} pv ${sf.c}">${sf.t}</span>
-        <div class="score-bar"><div class="score-fill" style="width:${pct}%"></div></div>
-      </div>`;
+      scoreHtml = '<div class="score-wrap">' +
+        '<span class="score-num ' + (is1||is2?'score-top':'') + ' pv ' + sf.c + '">' + sf.t + '</span>' +
+        '<div class="score-bar"><div class="score-fill" style="width:' + pct + '%"></div></div></div>';
     }
 
+    const blocLabels = {sector:'Secteur', factor:'Facteur', geo:'Géo', refuge:'Refuge'};
+    const blocLabel = blocLabels[etf.b] || etf.b;
 
     const tr = document.createElement('tr');
     tr.className = rowCls + (final?' fade-in':'');
-    tr.innerHTML = `
-      <td>${badge}</td>
-      <td><span class="ticker-cell">${etf.d}</span></td>
-      <td class="name-cell hide-sm"><span style="color:var(--text2);font-size:13px">${etf.n}</span></td>
-      <td class="hide-sm"><span class="bloc-tag ${etf.b}">${{sector:'Secteur',factor:'Facteur',refuge:'Refuge'}[etf.b]}</span></td>
-      <td class="r">${trendHtml}</td>
-      <td class="r"><span class="pv ${p1f.c}">${etf.p1!=null?p1f.t:'—'}</span></td>
-      <td class="r"><span class="pv ${p3f.c}">${etf.p3!=null?p3f.t:'—'}</span></td>
-      <td class="r"><span class="pv ${p6f.c}">${etf.p6!=null?p6f.t:'—'}</span></td>
-      <td class="r">${etf.p12!=null?`<span class="pv ${fmt(etf.p12).c}">${fmt(etf.p12).t}</span>`:'<span class="pv neu">—</span>'}</td>
-      <td class="r">${scoreHtml}</td>`;
+    tr.innerHTML =
+      '<td>' + badge + '</td>' +
+      '<td><span class="ticker-cell">' + etf.d + '</span></td>' +
+      '<td class="name-cell hide-sm"><span style="color:var(--text2);font-size:13px">' + etf.n + '</span></td>' +
+      '<td class="hide-sm"><span class="bloc-tag ' + etf.b + '">' + blocLabel + '</span></td>' +
+      '<td class="r">' + trendHtml + '</td>' +
+      '<td class="r"><span class="pv ' + p1f.c + '">' + (etf.p1!=null?p1f.t:'—') + '</span></td>' +
+      '<td class="r"><span class="pv ' + p3f.c + '">' + (etf.p3!=null?p3f.t:'—') + '</span></td>' +
+      '<td class="r"><span class="pv ' + p6f.c + '">' + (etf.p6!=null?p6f.t:'—') + '</span></td>' +
+      '<td class="r">' + (etf.p12!=null?('<span class="pv ' + fmt(etf.p12).c + '">' + fmt(etf.p12).t + '</span>'):'<span class="pv neu">—</span>') + '</td>' +
+      '<td class="r">' + scoreHtml + '</td>';
     tbody.appendChild(tr);
   });
 
-  if (final && top2.length >= 1) {
-    fillBanner(top2);
-  }
+  if (final && top2.length >= 1) fillBanner(top2);
 }
 
 function fillBanner(top2) {
   document.getElementById('topBanner').classList.add('visible');
-  [0,1].forEach(i => {
+  [0,1].forEach(function(i) {
     const e = top2[i]; if (!e) return;
     const n = i+1;
-    document.getElementById(`t${n}ticker`).textContent = e.d;
-    document.getElementById(`t${n}name`).textContent   = e.n;
+    document.getElementById('t'+n+'ticker').textContent = e.d;
+    document.getElementById('t'+n+'name').textContent   = e.n;
     const sf = fmt(e.score);
-    document.getElementById(`t${n}score`).textContent  = `Score : ${sf.t}`;
-    document.getElementById(`t${n}perfs`).innerHTML = [
+    document.getElementById('t'+n+'score').textContent  = 'Score : ' + sf.t;
+    document.getElementById('t'+n+'perfs').innerHTML = [
       {l:'1M',v:fmt(e.p1)},{l:'3M',v:fmt(e.p3)},{l:'6M',v:fmt(e.p6)},{l:'12M',v:fmt(e.p12)}
-    ].map(p=>`<div class="perf-chip"><span class="pclabel">${p.l} </span><span class="pv ${p.v.c}">${p.v.t}</span></div>`).join('');
+    ].map(function(p){return '<div class="perf-chip"><span class="pclabel">'+p.l+' </span><span class="pv '+p.v.c+'">'+p.v.t+'</span></div>';}).join('');
   });
 }
 
-// ── Graphique 6 mois (base 100 reconstitué depuis p1m, p3m, p6m) ──────────
-function resetData() {
-  results = [];
-  renderTable([], false);
-  document.getElementById('topBanner').classList.remove('visible');
-  document.getElementById('errBox').classList.remove('visible');
-  document.getElementById('dateBadge').style.display = 'none';
-  document.getElementById('dateBadge').style.display = 'none';
-  document.getElementById('status').textContent = '';
-  document.getElementById('btnLoad').disabled = false;
+function renderPositionBanner(history) {
+  const now = new Date();
+  const nowMonthKey = now.toISOString().slice(0,7);
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const decisionDate = lastWeekdayOfMonth(now.getFullYear(), now.getMonth());
+  const isActionDay = todayMidnight.getTime() === decisionDate.getTime();
+  const decisionDateLabel = decisionDate.toLocaleDateString('fr-BE', {day:'2-digit', month:'long'});
+
+  const frozenEntries = (history || []).filter(function(h){return h.month !== nowMonthKey;});
+  const lastFrozen = frozenEntries.length ? frozenEntries[frozenEntries.length - 1] : null;
+
+  const banner = document.getElementById('positionBanner');
+  const label = document.getElementById('pbLabel');
+  const picks = document.getElementById('pbPicks');
+  const note = document.getElementById('pbNote');
+  const apercuLabel = document.getElementById('apercuLabel');
+  const provisionalBadge = document.getElementById('provisionalBadge');
+
+  banner.classList.add('visible');
+
+  if (isActionDay) {
+    banner.className = 'position-banner visible action-day';
+    label.textContent = "🔔 Aujourd'hui, c'est le jour de la mise à jour mensuelle";
+    picks.innerHTML = '<div class="pb-pick"><span class="t">Voir l\'aperçu ci-dessous</span></div>';
+    note.textContent = 'Consultez le tableau après 17h30 (clôture Xetra/LSE) : cette sélection devient votre nouvelle position à tenir pour le mois suivant.';
+    apercuLabel.textContent = 'Signal du jour — à appliquer après 17h30';
+    provisionalBadge.style.display = 'none';
+  } else if (lastFrozen && lastFrozen.top && lastFrozen.top.length) {
+    banner.className = 'position-banner visible';
+    label.textContent = '📌 Position à tenir en ce moment (décidée le ' +
+      new Date(lastFrozen.capturedAt).toLocaleDateString('fr-BE',{day:'2-digit',month:'long'}) + ')';
+    picks.innerHTML = lastFrozen.top.map(function(e){
+      return '<div class="pb-pick"><div class="t">' + e.display + ' — 50%</div><div class="n">' + e.name + '</div></div>';
+    }).join('') || '<div class="pb-pick"><span class="n">Aucun ETF éligible ce mois (tous sous leur SMA200)</span></div>';
+    note.textContent = 'Ne changez rien avant le ' + decisionDateLabel + ' (prochaine mise à jour, après 17h30).';
+    const nextMonthIdx = (now.getMonth() + 1) % 12;
+    const nextName = MONTHS_LONG[nextMonthIdx];
+    const deMonth = /^[aeiouyàâéèêiîïôùû]/i.test(nextName) ? "d'" + nextName : 'de ' + nextName;
+    apercuLabel.textContent = 'Aperçu en formation — deviendra la position ' + deMonth + ' le ' + decisionDateLabel;
+    provisionalBadge.style.display = 'inline-block';
+  } else {
+    banner.className = 'position-banner visible';
+    label.textContent = '📌 Première période de suivi en cours';
+    picks.innerHTML = '<div class="pb-pick"><span class="n">Pas encore de position officielle</span></div>';
+    note.textContent = 'La première sélection figée sera disponible le ' + decisionDateLabel + ', après 17h30.';
+    apercuLabel.textContent = 'Aperçu en formation pour ce mois — pas encore actionnable';
+    provisionalBadge.style.display = 'inline-block';
+  }
 }
 
-renderTable([], false);
+const MONTHS_SHORT = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+function renderHistory(history) {
+  const histTable = document.getElementById('histTable');
+  const histBody = document.getElementById('histBody');
+  const histEmpty = document.getElementById('histEmpty');
+  if (history && history.length > 0) {
+    histTable.style.display = 'table';
+    histEmpty.style.display = 'none';
+    const nowMonthKey = new Date().toISOString().slice(0,7);
+    histBody.innerHTML = history.slice().reverse().map(function(h) {
+      const parts = h.month.split('-'), y = parts[0], m = parts[1];
+      const monthLabel = MONTHS_SHORT[parseInt(m,10)-1] + ' ' + y;
+      const isCurrent = h.month === nowMonthKey;
+      const t1 = h.top && h.top[0] ? h.top[0].display : '—';
+      const t2 = h.top && h.top[1] ? h.top[1].display : '—';
+      return '<tr><td>' + monthLabel + (isCurrent ? '<span class="hist-current">● EN COURS</span>' : '') + '</td>' +
+        '<td>' + t1 + '</td><td>' + t2 + '</td></tr>';
+    }).join('');
+  } else {
+    histTable.style.display = 'none';
+    histEmpty.style.display = 'block';
+  }
+}
+
+loadAll();
 </script>
 </body>
 </html>
