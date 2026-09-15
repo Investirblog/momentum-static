@@ -48,7 +48,7 @@ function fetchUrl(url) {
 /** Récupère ~14 mois de données quotidiennes — assez pour 252 jours de
  * lookback (12 mois) + marge. */
 async function getDailyPrices(ticker, idx) {
-  await delay(idx * 200);
+  await delay(idx * 100);
   const p2 = Math.floor(Date.now() / 1000);
   const p1 = Math.floor((Date.now() - 430 * 24 * 60 * 60 * 1000) / 1000); // ~14 mois
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?period1=${p1}&period2=${p2}&interval=1d`;
@@ -137,4 +137,17 @@ function getMomentumStore() {
   return getStore("momentumstatic");
 }
 
-module.exports = { UNIVERSE, TOP_N, computeSignal, getMomentumStore };
+/** Rendement moyen équipondéré d'un panier de tickers entre deux relevés
+ * de prix — utilisé pour la performance réalisée de la stratégie (Top2)
+ * ET pour le benchmark equal-weight des 14 ETF. Ignore silencieusement
+ * les tickers sans prix valide aux deux dates (erreur ponctuelle Yahoo). */
+function computeMonthReturn(tickers, currentPrices, previousPrices) {
+  const rets = [];
+  for (const t of tickers) {
+    const cur = currentPrices[t], prev = previousPrices[t];
+    if (cur != null && prev != null && prev !== 0) rets.push(cur / prev - 1);
+  }
+  return rets.length ? rets.reduce((a, b) => a + b, 0) / rets.length : null;
+}
+
+module.exports = { UNIVERSE, TOP_N, computeSignal, getMomentumStore, computeMonthReturn };
