@@ -13,7 +13,7 @@ const UNIVERSE = [
   { ticker: "IWQU.L",  display: "IWQU", name: "MSCI World Quality",        bloc: "factor" },
   { ticker: "WSML.L",  display: "WSML", name: "MSCI World Small Cap",      bloc: "factor" },
   { ticker: "MVOL.L",  display: "MVOL", name: "MSCI World Min Volatility", bloc: "factor" },
-  { ticker: "IUVL.L",  display: "IUVL", name: "MSCI Europe Value",         bloc: "factor" },
+  { ticker: "IEVL.L",  display: "IEVL", name: "MSCI Europe Value Factor",  bloc: "factor" },
   { ticker: "CNDX.L",  display: "CNDX", name: "Nasdaq 100 UCITS ETF",      bloc: "geo" },
   { ticker: "EXUS.DE", display: "EXUS", name: "MSCI World ex-USA",         bloc: "geo" },
   { ticker: "IEMA.L",  display: "IEMA", name: "MSCI Emerging Markets",     bloc: "geo" },
