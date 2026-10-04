@@ -2,7 +2,7 @@ const https = require("https");
 const { getStore } = require("@netlify/blobs");
 
 // ─────────────────────────────────────────────────────────────────────
-// Univers (identique à generate_data.py — 14 ETF)
+// Univers : 14 ETF
 // ─────────────────────────────────────────────────────────────────────
 const UNIVERSE = [
   { ticker: "QDVE.DE", display: "QDVE", name: "S&P 500 Technology",        bloc: "sector" },
@@ -81,7 +81,7 @@ function calcSMA(closes, n) {
   return slice.reduce((a, b) => a + b, 0) / n;
 }
 
-/** Score 13612W (Keller & Keuning) — identique à generate_data.py :
+/** Score 13612W (Keller & Keuning) :
  * 12×ret1M + 4×ret3M + 2×ret6M + 1×ret12M (jours de bourse : 21/63/126/252) */
 function calcScore13612W(closes) {
   const p1m = calcPerf(closes, 21), p3m = calcPerf(closes, 63);
@@ -91,9 +91,8 @@ function calcScore13612W(closes) {
   return { score, p1m, p3m, p6m, p12m };
 }
 
-/** Calcule le classement complet + sélection TopN — logique équivalente à
- * generate_data.py + la sélection faite côté front-end dans l'ancien
- * index.html (éligible = score connu ET pas sous sa SMA200). */
+/** Calcule le classement complet + sélection TopN
+ * (éligible = score connu ET pas sous sa SMA200). */
 async function computeSignal() {
   const results = [];
   const daily = await Promise.all(UNIVERSE.map((etf, i) => getDailyPrices(etf.ticker, i)));
