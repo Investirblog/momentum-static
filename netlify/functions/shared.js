@@ -18,7 +18,7 @@ const UNIVERSE = [
   { ticker: "EXUS.DE", display: "EXUS", name: "MSCI World ex-USA",         bloc: "geo" },
   { ticker: "IEMA.L",  display: "IEMA", name: "MSCI Emerging Markets",     bloc: "geo" },
   { ticker: "IGLN.L",  display: "IGLN", name: "Physical Gold ETC",         bloc: "refuge" },
-  { ticker: "IPRP.L",  display: "IPRP", name: "MSCI World Real Estate",    bloc: "refuge" },
+  { ticker: "IPRP.L",  display: "IPRP", name: "European Property Yield",     bloc: "refuge" },
 ];
 
 const TOP_N = 2; // nombre d'ETF sélectionnés chaque mois (config actuelle du site)
