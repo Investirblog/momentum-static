@@ -7,8 +7,8 @@ const { getStore } = require("@netlify/blobs");
 const UNIVERSE = [
   { ticker: "QDVE.DE", display: "QDVE", name: "S&P 500 Technology",        bloc: "sector" },
   { ticker: "QDVF.DE", display: "QDVF", name: "S&P 500 Energy",            bloc: "sector" },
-  { ticker: "QDVH.DE", display: "QDVH", name: "S&P 500 Health Care",       bloc: "sector" },
-  { ticker: "QDVG.DE", display: "QDVG", name: "S&P 500 Financials",        bloc: "sector" },
+  { ticker: "QDVH.DE", display: "QDVH", name: "S&P 500 Financials",        bloc: "sector" },
+  { ticker: "QDVG.DE", display: "QDVG", name: "S&P 500 Health Care",       bloc: "sector" },
   { ticker: "QDVI.DE", display: "QDVI", name: "MSCI USA Value Factor",     bloc: "factor" },
   { ticker: "IWQU.L",  display: "IWQU", name: "MSCI World Quality",        bloc: "factor" },
   { ticker: "WSML.L",  display: "WSML", name: "MSCI World Small Cap",      bloc: "factor" },
