@@ -7,6 +7,8 @@
   [headers.values]
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
 
 # Recalcule le classement 1×/jour et fige la sélection mensuelle dans
 # Netlify Blobs. Exécuté à 20h00 UTC (22h CEST l'été / 21h CET l'hiver) —
