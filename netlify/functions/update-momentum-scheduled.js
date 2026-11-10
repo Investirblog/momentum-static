@@ -4,6 +4,17 @@ exports.handler = async () => {
   try {
     const signal = await computeSignal();
     const store = getMomentumStore();
+
+    // Garde-fou : si Yahoo a échoué pour certains ETF (429, timeout…), on
+    // n'écrase pas une capture complète par une capture partielle — la
+    // sélection mensuelle figée pourrait sinon être calculée sur 12 ETF au
+    // lieu de 14. Le prochain passage quotidien réessaiera.
+    const previousLatest = await store.get("latest", { type: "json" });
+    if (previousLatest?.selection?.allScored && !signal.selection.allScored) {
+      console.warn(`update-momentum-scheduled: capture partielle ignorée (${signal.selection.nullCount} ETF sans score)`);
+      return { statusCode: 200, body: JSON.stringify({ ok: true, skipped: "capture partielle ignorée", nullCount: signal.selection.nullCount }) };
+    }
+
     await store.setJSON("latest", signal);
 
     const monthKey = signal.updatedAt.slice(0, 7);
