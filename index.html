@@ -287,6 +287,18 @@
   .footer-note a { color: var(--accent); text-decoration: none; }
   .footer-note a:hover { text-decoration: underline; }
 
+  .kofi-float {
+    position: fixed; right: 16px; bottom: 16px; z-index: 50;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 14px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 999px; color: var(--text2); font-size: 12px; text-decoration: none;
+    box-shadow: 0 4px 14px rgba(0,0,0,.4);
+    transition: opacity .2s, border-color .2s, color .2s;
+  }
+  .kofi-float:hover, .kofi-float:focus-visible { border-color: var(--accent); color: var(--accent); }
+  .kofi-float.hide { opacity: 0; pointer-events: none; }
+  @media print { .kofi-float { display: none; } }
+
   @keyframes spin { to { transform: rotate(360deg); } }
   .spin {
     display: inline-block; width: 13px; height: 13px;
@@ -304,6 +316,8 @@
     h1 { font-size: 28px; }
     .wrap { padding: 28px 16px 60px; }
     .pb-picks { gap: 14px; }
+    .kofi-float .kofi-label { display: none; }
+    .kofi-float { padding: 10px 12px; font-size: 15px; }
   }
 </style>
 <script data-goatcounter="https://momentumstatic.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
@@ -366,7 +380,7 @@
     <button class="btn-main" id="btnLoad" onclick="loadAll()">⟳ Actualiser</button>
   </div>
 
-  <div id="status"></div>
+  <div id="status" role="status" aria-live="polite"></div>
 
   <div class="err-box" id="errBox">
     ⚠ Impossible de charger les données.<br>
@@ -467,10 +481,12 @@
     Recalculé automatiquement chaque jour · Position figée le dernier jour ouvré du mois · Source : Yahoo Finance<br>
     1M = 21 j · 3M = 63 j · 6M = 126 j · 12M = 252 j · SMA200 = 200 j · Score = 12×ret1M + 4×ret3M + 2×ret6M + ret12M<br>
     ⚠ Outil d'aide à la décision uniquement — pas un conseil en investissement<br>
-    Un outil proposé par <a href="https://investir.blog" target="_blank" rel="noopener">investir.blog</a><br>
+    Un outil proposé par <a href="https://investir.blog" target="_blank" rel="noopener">investir.blog</a> · <a href="https://ko-fi.com/nathanaeldumortier" target="_blank" rel="noopener">☕ Soutenir ce site gratuit sur Ko-fi</a><br>
     Autres outils gratuits : <a href="https://laboetf.eu" target="_blank" rel="noopener">Labo ETF</a> (stratégies ETF backtestées) · <a href="https://macroetf.com" target="_blank" rel="noopener">MacroETF</a> (secteurs selon le régime économique) · <a href="https://rotationshield.be" target="_blank" rel="noopener">RotationShield</a> (signal actions ou cash) · <a href="https://hodlometre.com" target="_blank" rel="noopener">HODLomètre</a> (cycle du Bitcoin)
   </div>
 </div>
+
+<a class="kofi-float" id="kofiFloat" href="https://ko-fi.com/nathanaeldumortier" target="_blank" rel="noopener" aria-label="Soutenir ce site gratuit sur Ko-fi"><span aria-hidden="true">☕</span><span class="kofi-label">Soutenir ce site</span></a>
 
 <script>
 const MONTHS_LONG = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
@@ -559,7 +575,7 @@ async function loadAll() {
     const ok = results.filter(function(r){return !r.err;}).length;
     setStatus('✓ ' + ok + '/' + results.length + ' ETF chargés', 'ok');
   } catch(e) {
-    setStatus('⚠ ' + e.message, 'error');
+    setStatus('⚠ ' + String(e.message).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'), 'error');
     document.getElementById('errBox').classList.add('visible');
   }
   btn.disabled = false;
@@ -819,7 +835,7 @@ function renderPortfolioChart(history) {
   }
   wrap.style.display = 'block'; empty.style.display = 'none'; btn.style.display = 'inline-flex';
 
-  const startCapital = parseFloat(document.getElementById('portfolioCapital').value) || 10000;
+  const startCapital = Math.max(parseFloat(document.getElementById('portfolioCapital').value) || 0, 0) || 10000;
   const eq = computeEquityCurves(history, startCapital);
 
   document.getElementById('pfValueStrategy').textContent = Math.round(eq.stratValue).toLocaleString('fr-BE') + ' €';
@@ -841,7 +857,7 @@ document.getElementById('portfolioCapital').addEventListener('change', function(
 
 function downloadPortfolioChart() {
   if (!__lastHistory) return;
-  const startCapital = parseFloat(document.getElementById('portfolioCapital').value) || 10000;
+  const startCapital = Math.max(parseFloat(document.getElementById('portfolioCapital').value) || 0, 0) || 10000;
   const eq = computeEquityCurves(__lastHistory, startCapital);
   const svg = buildEquitySVG(eq.labels, eq.stratSeries, eq.benchSeries, {
     width: 1200, height: 675, bg: '#ffffff', grid: '#eeeeee',
@@ -873,6 +889,16 @@ function downloadPortfolioChart() {
 }
 
 loadAll();
+
+// Le bouton Ko-fi flottant s'efface quand le pied de page (qui contient déjà le lien) est visible.
+try {
+  const kofi = document.getElementById('kofiFloat'), foot = document.querySelector('.footer-note');
+  if (kofi && foot && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function(entries) {
+      kofi.classList.toggle('hide', entries[0].isIntersecting);
+    }).observe(foot);
+  }
+} catch(e) { /* bouton laissé visible */ }
 
 // Ouvre "Comment ça marche ?" par défaut au tout premier passage, replié ensuite.
 try {
